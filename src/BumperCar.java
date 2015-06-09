@@ -3,6 +3,9 @@
 //hej v1.2
 
 import lejos.nxt.*;
+import lejos.robotics.localization.OdometryPoseProvider;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.Pose;
 import lejos.util.Delay;
 
 /**
@@ -30,12 +33,24 @@ public class BumperCar
 
   public static void main(String[] args)
   {
+	  double wheelDiameter = 3.5, trackWidth = 14.82;
+      double travelSpeed = 10, rotateSpeed = 45;
+      NXTRegulatedMotor left = Motor.B;
+      NXTRegulatedMotor right = Motor.C;
+      
+      DifferentialPilot pilot = new DifferentialPilot(wheelDiameter, trackWidth, left, right);
+      OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
+      
+      Pose initialPose = new Pose(0,0,0);
+      
+      pilot.setTravelSpeed(travelSpeed);
+      pilot.setRotateSpeed(rotateSpeed);
+      poseProvider.setPose(initialPose);
 	
 	 
 	  
-    Motor.A.setSpeed(400);
-    Motor.C.setSpeed(400);
-    Behavior b1 = new LookForTarget();
+    
+    Behavior b1 = new Wonder();
     Behavior b2 = new Charge();
     
     Behavior b3 = new Survive();
@@ -57,11 +72,53 @@ public class BumperCar
   
 }
 
+class Wonder extends Thread implements Behavior{
+	
+	private boolean _suppressed = false;
+	
+	public Wonder(){
+		
+		this.setDaemon(true);
+        this.start();
+		
+	}
+
+	@Override
+	public int takeControl() {
+		// TODO Auto-generated method stub
+		return 10;
+	}
+
+	@Override
+	public void action() {
+		// TODO Auto-generated method stub
+		_suppressed = false;
+		
+		
+	    LCD.drawString("Wonder",0,2);
+	    while (!_suppressed)
+	    {
+	    	
+	    	//pilot.travel(20);
+	      Thread.yield(); //don't exit till suppressed
+	    }
+		
+	}
+
+	@Override
+	public void suppress() {
+		// TODO Auto-generated method stub
+		_suppressed = true;// standard practice for suppress methods
+		
+	}
+	
+}
 
 
 
 
 
+//!--               Old Code                     --!//
 
 class Survive extends Thread implements Behavior
 {
