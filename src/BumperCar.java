@@ -120,27 +120,28 @@ class Wander extends Thread implements Behavior{
 		
 		
 	    LCD.drawString("Wander         ",0,2);
-	    while (!_suppressed)
+	    
+	    pilot.travel(20, false);
+	    randomNumber = random.nextInt(100);
+    	LCD.drawString("Random     "+randomNumber,0,3);
+    	/*
+    	if(randomNumber >=0 && randomNumber <= 24){
+    		pilot.rotate(90);
+    	}
+    	else if(randomNumber >=25 && randomNumber <= 49){
+    		pilot.rotate(180);
+    	}
+    	else if(randomNumber >=50 && randomNumber <= 74){
+    		pilot.rotate(270);
+    	}
+    	else if(randomNumber >=75 && randomNumber <= 100){
+    		pilot.rotate(0);
+    	}
+    	*/
+	    
+	    while (!_suppressed && pilot.isMoving())
 	    {
-	    	
-	    	pilot.travel(20);
-	    	randomNumber = random.nextInt(100);
-	    	LCD.drawString("Random     "+randomNumber,0,3);
-	    	
-	    	if(randomNumber >=0 && randomNumber <= 24){
-	    		pilot.rotate(90);
-	    	}
-	    	else if(randomNumber >=25 && randomNumber <= 49){
-	    		pilot.rotate(180);
-	    	}
-	    	else if(randomNumber >=50 && randomNumber <= 74){
-	    		pilot.rotate(270);
-	    	}
-	    	else if(randomNumber >=75 && randomNumber <= 100){
-	    		pilot.rotate(0);
-	    	}
-	    	
-	    	
+	
 	    	Thread.yield(); //don't exit till suppressed
 	    }
 		
@@ -191,7 +192,8 @@ class Avoid extends Thread implements Behavior{
             		  lightCount++;
             		  Delay.msDelay(10);
             		  LCD.drawString("LightCount  "+lightCount,0,5);
-            	  } else if (lightValue > 40 && lightValue < 254){
+            	  } 
+            	  else if (lightValue > 40 && lightValue < 254){
             		  lightCount = 0;
             		  LCD.drawString("LightCount zero",0,5);
             	  }
@@ -231,11 +233,14 @@ class Avoid extends Thread implements Behavior{
 	    poseProvider.setPose(initialPose);
 	    
 	    LCD.drawString("Avoid          ",0,2);
-	    while (!_suppressed)
+	    
+	    pilot.quickStop();
+    	Sound.twoBeeps();
+    	pilot.rotate(180, false);
+    	pilot.travel(40, false);
+    	
+	    while (!_suppressed && pilot.isMoving())
 	    {
-	    	Sound.twoBeeps();
-	    	pilot.rotate(180);
-	    	pilot.travel(40);
 	    	Thread.yield(); //don't exit till suppressed
 	    }
 		
