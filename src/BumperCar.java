@@ -80,7 +80,7 @@ class Wander extends Thread implements Behavior{
 	//Instance of BumperCar used to collect parameters for the Pilot
 	BumperCar carInstance  = new BumperCar();
 
-	public int randomNumber;
+	public double randomNumber;
 	
 	
 	
@@ -124,9 +124,22 @@ class Wander extends Thread implements Behavior{
 	    {
 	    	
 	    	pilot.travel(20);
-	    	randomNumber = random.nextInt(4);
-	    	LCD.drawString("Random        "+randomNumber,0,3);
-	    	pilot.rotate((double)randomNumber*90);
+	    	randomNumber = random.nextInt(100);
+	    	LCD.drawString("Random     "+randomNumber,0,3);
+	    	
+	    	if(randomNumber >=0 && randomNumber <= 24){
+	    		pilot.rotate(90);
+	    	}
+	    	else if(randomNumber >=25 && randomNumber <= 49){
+	    		pilot.rotate(180);
+	    	}
+	    	else if(randomNumber >=50 && randomNumber <= 74){
+	    		pilot.rotate(270);
+	    	}
+	    	else if(randomNumber >=75 && randomNumber <= 100){
+	    		pilot.rotate(0);
+	    	}
+	    	
 	    	
 	    	Thread.yield(); //don't exit till suppressed
 	    }
@@ -147,6 +160,7 @@ class Avoid extends Thread implements Behavior{
 	private boolean _suppressed = false;
 	private LightSensor light;
 	private int lightValue;
+	private int lightCount;
 	
 	//Instance of BumperCar used to collect parameters for the Pilot
 	BumperCar carInstance  = new BumperCar();
@@ -155,6 +169,7 @@ class Avoid extends Thread implements Behavior{
 		
 		light = new LightSensor(SensorPort.S2);
         light.setFloodlight(true);
+        
 		
 		this.setDaemon(true);
         this.start();
@@ -167,7 +182,21 @@ class Avoid extends Thread implements Behavior{
 
           @Override
           public void run() {
-              while ( true ) lightValue = light.readValue();
+              while ( true ){
+            	  
+            	  lightValue = light.readValue();
+            	  LCD.drawString("LightValue  "+lightValue,0,4);
+            	  
+            	  if(lightValue < 40){
+            		  lightCount++;
+            		  Delay.msDelay(10);
+            		  LCD.drawString("LightCount  "+lightCount,0,5);
+            	  } else if (lightValue > 40 && lightValue < 254){
+            		  lightCount = 0;
+            		  LCD.drawString("LightCount zero",0,5);
+            	  }
+            	  
+              }
           }  
         });
         t1.start();
@@ -176,7 +205,7 @@ class Avoid extends Thread implements Behavior{
 	@Override
 	public int takeControl() {
 		// TODO Auto-generated method stub
-		if(lightValue > 48) {
+		if(lightCount > 5 && lightCount < 20 && lightValue > 40) {
     		return 100;
     	} 
     	else { 
@@ -200,6 +229,15 @@ class Avoid extends Thread implements Behavior{
 	    pilot.setTravelSpeed(carInstance.getTravelSpeed());
 	    pilot.setRotateSpeed(carInstance.getRotateSpeed());
 	    poseProvider.setPose(initialPose);
+	    
+	    LCD.drawString("Avoid          ",0,2);
+	    while (!_suppressed)
+	    {
+	    	Sound.twoBeeps();
+	    	pilot.rotate(180);
+	    	pilot.travel(40);
+	    	Thread.yield(); //don't exit till suppressed
+	    }
 		
 	}
 

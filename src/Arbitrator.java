@@ -60,8 +60,8 @@ public class Arbitrator
 
          
          Button.waitForAnyPress();
-         Delay.msDelay(3000);
-         Sound.beepSequenceUp();
+         //Delay.msDelay(3000);
+         //Sound.beepSequenceUp();
          
          actionThread.start();
 	     
