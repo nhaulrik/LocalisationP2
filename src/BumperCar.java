@@ -2,6 +2,8 @@
 
 //hej v1.2
 
+import java.util.Random;
+
 import lejos.nxt.*;
 import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.navigation.DifferentialPilot;
@@ -30,8 +32,8 @@ public class BumperCar
 {
 	
 
-	double wheelDiameter = 3.5, trackWidth = 14.82;
-    double travelSpeed = 10, rotateSpeed = 45;
+	double wheelDiameter = 3.025, trackWidth = 15;
+    double travelSpeed = 10, rotateSpeed = 90;
  
 	
     public double getWheelDiameter() {    	return wheelDiameter; }
@@ -45,14 +47,17 @@ public class BumperCar
 	     
     
     Behavior b1 = new Wander();
-    Behavior b2 = new Charge();
+    Behavior b2 = new Avoid();
     
+    /*
+    Behavior b2 = new Charge();
     Behavior b3 = new Survive();
     Behavior b4 = new Exit();
+    */
 
     Behavior[] behaviorList =
     {
-      b1, b2, b3, b4
+      b1 , b2 //, b3, b4
     };
     Arbitrator arbitrator = new Arbitrator(behaviorList);
     LCD.drawString("Bumper Car",0,1);
@@ -75,6 +80,7 @@ class Wander extends Thread implements Behavior{
 	//Instance of BumperCar used to collect parameters for the Pilot
 	BumperCar carInstance  = new BumperCar();
 
+	public int randomNumber;
 	
 	
 	
@@ -96,22 +102,20 @@ class Wander extends Thread implements Behavior{
 	@Override
 	public void action() {
 		
-		
-		 NXTRegulatedMotor left = Motor.B;
-	      NXTRegulatedMotor right = Motor.C;
+		NXTRegulatedMotor left = Motor.B;
+	    NXTRegulatedMotor right = Motor.C;
 	      
-	      DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
-	      OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
+	    DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
+	    OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
 	      
-	      Pose initialPose = new Pose(0,0,0);
+	    Pose initialPose = new Pose(0,0,0);
 	      
-	      pilot.setTravelSpeed(carInstance.getTravelSpeed());
-	      pilot.setRotateSpeed(carInstance.getRotateSpeed());
-	      poseProvider.setPose(initialPose);
-			
-	
-	 
-		// TODO Auto-generated method stub
+	    pilot.setTravelSpeed(carInstance.getTravelSpeed());
+	    pilot.setRotateSpeed(carInstance.getRotateSpeed());
+	    poseProvider.setPose(initialPose);
+   
+	    Random random = new Random();
+
 		_suppressed = false;
 		
 		
@@ -120,8 +124,11 @@ class Wander extends Thread implements Behavior{
 	    {
 	    	
 	    	pilot.travel(20);
+	    	randomNumber = random.nextInt(4);
+	    	LCD.drawString("Random        "+randomNumber,0,3);
+	    	pilot.rotate((double)randomNumber*90);
 	    	
-	      Thread.yield(); //don't exit till suppressed
+	    	Thread.yield(); //don't exit till suppressed
 	    }
 		
 	}
@@ -135,10 +142,80 @@ class Wander extends Thread implements Behavior{
 	
 }
 
+class Avoid extends Thread implements Behavior{
+	
+	private boolean _suppressed = false;
+	private LightSensor light;
+	private int lightValue;
+	
+	//Instance of BumperCar used to collect parameters for the Pilot
+	BumperCar carInstance  = new BumperCar();
+	
+	public Avoid(){
+		
+		light = new LightSensor(SensorPort.S2);
+        light.setFloodlight(true);
+		
+		this.setDaemon(true);
+        this.start();
+    
+	}
+	
+	public void run()
+    {
+      Thread t1 = new Thread(new Runnable(){
+
+          @Override
+          public void run() {
+              while ( true ) lightValue = light.readValue();
+          }  
+        });
+        t1.start();
+    }
+
+	@Override
+	public int takeControl() {
+		// TODO Auto-generated method stub
+		if(lightValue > 48) {
+    		return 100;
+    	} 
+    	else { 
+    		return 0;
+    	}
+	}
+
+	@Override
+	public void action() {
+		// TODO Auto-generated method stub
+		_suppressed = false;
+		
+		NXTRegulatedMotor left = Motor.B;
+	    NXTRegulatedMotor right = Motor.C;
+	      
+	    DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
+	    OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
+	      
+	    Pose initialPose = new Pose(0,0,0);
+	      
+	    pilot.setTravelSpeed(carInstance.getTravelSpeed());
+	    pilot.setRotateSpeed(carInstance.getRotateSpeed());
+	    poseProvider.setPose(initialPose);
+		
+	}
+
+	@Override
+	public void suppress() {
+		// TODO Auto-generated method stub
+		_suppressed = true;
+		
+	}
+	
+}
+
 
 
 //!--               Old Code                     --!//
-
+/*
 class Survive extends Thread implements Behavior
 {
     private boolean _suppressed = false;
@@ -502,5 +579,6 @@ public int takeControl()
     System.exit(0);
   }
 }
+*/
 
 
