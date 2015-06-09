@@ -29,28 +29,22 @@ import lejos.util.Delay;
 public class BumperCar
 {
 	
-	
 
+	double wheelDiameter = 3.5, trackWidth = 14.82;
+    double travelSpeed = 10, rotateSpeed = 45;
+ 
+	
+    public double getWheelDiameter() {    	return wheelDiameter; }
+    public double getTrackWidth() 	{    	return trackWidth;    }
+    public double getTravelSpeed() {    	return travelSpeed;   }
+    public double getRotateSpeed() {    	return rotateSpeed;   }
+    
   public static void main(String[] args)
   {
-	  double wheelDiameter = 3.5, trackWidth = 14.82;
-      double travelSpeed = 10, rotateSpeed = 45;
-      NXTRegulatedMotor left = Motor.B;
-      NXTRegulatedMotor right = Motor.C;
-      
-      DifferentialPilot pilot = new DifferentialPilot(wheelDiameter, trackWidth, left, right);
-      OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
-      
-      Pose initialPose = new Pose(0,0,0);
-      
-      pilot.setTravelSpeed(travelSpeed);
-      pilot.setRotateSpeed(rotateSpeed);
-      poseProvider.setPose(initialPose);
-	
-	 
 	  
+	     
     
-    Behavior b1 = new Wonder();
+    Behavior b1 = new Wander();
     Behavior b2 = new Charge();
     
     Behavior b3 = new Survive();
@@ -70,17 +64,27 @@ public class BumperCar
 
 	 }
   
+  
+  
 }
 
-class Wonder extends Thread implements Behavior{
+class Wander extends Thread implements Behavior{
 	
 	private boolean _suppressed = false;
 	
-	public Wonder(){
+	//Instance of BumperCar used to collect parameters for the Pilot
+	BumperCar carInstance  = new BumperCar();
+
+	
+	
+	
+	
+	public Wander(){
 		
 		this.setDaemon(true);
         this.start();
-		
+        
+     
 	}
 
 	@Override
@@ -91,15 +95,32 @@ class Wonder extends Thread implements Behavior{
 
 	@Override
 	public void action() {
+		
+		
+		 NXTRegulatedMotor left = Motor.B;
+	      NXTRegulatedMotor right = Motor.C;
+	      
+	      DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
+	      OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
+	      
+	      Pose initialPose = new Pose(0,0,0);
+	      
+	      pilot.setTravelSpeed(carInstance.getTravelSpeed());
+	      pilot.setRotateSpeed(carInstance.getRotateSpeed());
+	      poseProvider.setPose(initialPose);
+			
+	
+	 
 		// TODO Auto-generated method stub
 		_suppressed = false;
 		
 		
-	    LCD.drawString("Wonder",0,2);
+	    LCD.drawString("Wander         ",0,2);
 	    while (!_suppressed)
 	    {
 	    	
-	    	//pilot.travel(20);
+	    	pilot.travel(20);
+	    	
 	      Thread.yield(); //don't exit till suppressed
 	    }
 		
@@ -113,8 +134,6 @@ class Wonder extends Thread implements Behavior{
 	}
 	
 }
-
-
 
 
 
