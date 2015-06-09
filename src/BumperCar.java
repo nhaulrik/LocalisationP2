@@ -33,7 +33,7 @@ public class BumperCar
 	
 
 	double wheelDiameter = 3.025, trackWidth = 15;
-    double travelSpeed = 10, rotateSpeed = 90;
+    double travelSpeed = 5, rotateSpeed = 90;
  
 	
     public double getWheelDiameter() {    	return wheelDiameter; }
@@ -121,7 +121,7 @@ class Wander extends Thread implements Behavior{
 		
 	    LCD.drawString("Wander         ",0,2);
 	    
-	    pilot.travel(20, false);
+	    pilot.travel(20, true);
 	    randomNumber = random.nextInt(100);
     	LCD.drawString("Random     "+randomNumber,0,3);
     	/*
@@ -141,7 +141,7 @@ class Wander extends Thread implements Behavior{
 	    
 	    while (!_suppressed && pilot.isMoving())
 	    {
-	
+
 	    	Thread.yield(); //don't exit till suppressed
 	    }
 		
@@ -193,10 +193,12 @@ class Avoid extends Thread implements Behavior{
             		  Delay.msDelay(10);
             		  LCD.drawString("LightCount  "+lightCount,0,5);
             	  } 
+            	  
             	  else if (lightValue > 40 && lightValue < 254){
             		  lightCount = 0;
             		  LCD.drawString("LightCount zero",0,5);
             	  }
+            	  
             	  
               }
           }  
@@ -207,7 +209,7 @@ class Avoid extends Thread implements Behavior{
 	@Override
 	public int takeControl() {
 		// TODO Auto-generated method stub
-		if(lightCount > 5 && lightCount < 20 && lightValue > 40) {
+		if(lightValue < 40){				//lightCount > 5 && lightCount < 30 && lightValue > 40) {
     		return 100;
     	} 
     	else { 
@@ -234,7 +236,7 @@ class Avoid extends Thread implements Behavior{
 	    
 	    LCD.drawString("Avoid          ",0,2);
 	    
-	    pilot.quickStop();
+	    pilot.stop();
     	Sound.twoBeeps();
     	pilot.rotate(180, false);
     	pilot.travel(40, false);
