@@ -129,27 +129,27 @@ class Wander extends Thread implements Behavior{
 	    
     	//LCD.drawString("Random     "+randomNumber,0,3);
     	
-    	if(randomNumber >=0 && randomNumber <= 24){
+    	if(!_suppressed && randomNumber >=0 && randomNumber <= 24){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(90, false);
     		//Delay.msDelay(1000);
     		Avoid.threadRunning(true);
     	}
-    	else if(randomNumber >=25 && randomNumber <= 49){
+    	else if(!_suppressed && randomNumber >=25 && randomNumber <= 49){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(180, false);
     		//Delay.msDelay(1000);
 
     		Avoid.threadRunning(true);
     	}
-    	else if(randomNumber >=50 && randomNumber <= 74){
+    	else if(!_suppressed && randomNumber >=50 && randomNumber <= 74){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(270, false);
     		//Delay.msDelay(1000);
 
     		Avoid.threadRunning(true);
     	}
-    	else if(randomNumber >=75 && randomNumber <= 100){
+    	else if(!_suppressed && randomNumber >=75 && randomNumber <= 100){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(0, false);
     		//Delay.msDelay(1000);
@@ -273,7 +273,7 @@ class Avoid extends Thread implements Behavior{
 	    
 	    LCD.drawString("Avoid          ",0,2);
 	    
-    	BumperCar.pilot.travel(-50, false);
+    	BumperCar.pilot.rotate(180, false);
     	flag = false;
 
 	    while (!_suppressed && BumperCar.pilot.isMoving())
