@@ -32,8 +32,18 @@ public class BumperCar
 {
 	
 
-	double wheelDiameter = 3.025, trackWidth = 15;
-    double travelSpeed = 5, rotateSpeed = 90;
+	static double wheelDiameter = 3.025, trackWidth = 15;
+    static double travelSpeed = 5, rotateSpeed = 90;
+    
+    static NXTRegulatedMotor left = Motor.B;
+    static NXTRegulatedMotor right = Motor.C;
+      
+    static DifferentialPilot pilot = new DifferentialPilot(wheelDiameter, trackWidth, left, right);
+    static OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
+      
+    static Pose initialPose = new Pose(0,0,0);
+      
+
  
 	
     public double getWheelDiameter() {    	return wheelDiameter; }
@@ -43,7 +53,9 @@ public class BumperCar
     
   public static void main(String[] args)
   {
-	  
+	    pilot.setTravelSpeed(travelSpeed);
+	    pilot.setRotateSpeed(rotateSpeed);
+	    poseProvider.setPose(initialPose);
 	     
     
     Behavior b1 = new Wander();
@@ -76,14 +88,9 @@ public class BumperCar
 class Wander extends Thread implements Behavior{
 	
 	private boolean _suppressed = false;
-	
-	//Instance of BumperCar used to collect parameters for the Pilot
-	BumperCar carInstance  = new BumperCar();
 
 	public double randomNumber;
-	
-	
-	
+
 	
 	public Wander(){
 		
@@ -102,17 +109,7 @@ class Wander extends Thread implements Behavior{
 	@Override
 	public void action() {
 		
-		NXTRegulatedMotor left = Motor.B;
-	    NXTRegulatedMotor right = Motor.C;
-	      
-	    DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
-	    OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
-	      
-	    Pose initialPose = new Pose(0,0,0);
-	      
-	    pilot.setTravelSpeed(carInstance.getTravelSpeed());
-	    pilot.setRotateSpeed(carInstance.getRotateSpeed());
-	    poseProvider.setPose(initialPose);
+		
    
 	    Random random = new Random();
 
@@ -121,29 +118,43 @@ class Wander extends Thread implements Behavior{
 		
 	    LCD.drawString("Wander         ",0,2);
 	    
-	    pilot.travel(20, true);
-	    randomNumber = random.nextInt(100);
-    	LCD.drawString("Random     "+randomNumber,0,3);
-    	/*
-    	if(randomNumber >=0 && randomNumber <= 24){
-    		pilot.rotate(90);
-    	}
-    	else if(randomNumber >=25 && randomNumber <= 49){
-    		pilot.rotate(180);
-    	}
-    	else if(randomNumber >=50 && randomNumber <= 74){
-    		pilot.rotate(270);
-    	}
-    	else if(randomNumber >=75 && randomNumber <= 100){
-    		pilot.rotate(0);
-    	}
-    	*/
-	    
-	    while (!_suppressed && pilot.isMoving())
+	    BumperCar.pilot.travel(20, true);
+	    while (!_suppressed && BumperCar.pilot.isMoving())
 	    {
-
 	    	Thread.yield(); //don't exit till suppressed
 	    }
+	    
+	    randomNumber = random.nextInt(100);
+    	//LCD.drawString("Random     "+randomNumber,0,3);
+    	
+    	if(randomNumber >=0 && randomNumber <= 24){
+    		Avoid.threadRunning(false);
+    		BumperCar.pilot.rotate(90, false);
+    		Avoid.threadRunning(true);
+    	}
+    	else if(randomNumber >=25 && randomNumber <= 49){
+    		Avoid.threadRunning(false);
+    		BumperCar.pilot.rotate(180, false);
+    		Avoid.threadRunning(true);
+    	}
+    	else if(randomNumber >=50 && randomNumber <= 74){
+    		Avoid.threadRunning(false);
+    		BumperCar.pilot.rotate(270, false);
+    		Avoid.threadRunning(true);
+    	}
+    	else if(randomNumber >=75 && randomNumber <= 100){
+    		Avoid.threadRunning(false);
+    		BumperCar.pilot.rotate(0, false);
+    		Avoid.threadRunning(true);
+    	}
+    	
+	    
+	    while (!_suppressed && BumperCar.pilot.isMoving())
+	    {
+	    	Thread.yield(); //don't exit till suppressed
+	    }
+	    
+	    BumperCar.pilot.stop();
 		
 	}
 
@@ -159,48 +170,48 @@ class Wander extends Thread implements Behavior{
 class Avoid extends Thread implements Behavior{
 	
 	private boolean _suppressed = false;
-	private LightSensor light;
-	private int lightValue;
-	private int lightCount;
+	private LightSensor lightFront;
+	private LightSensor lightBack;
+	private int lightValFront;
+	private int lightValBack;
+
 	
-	//Instance of BumperCar used to collect parameters for the Pilot
-	BumperCar carInstance  = new BumperCar();
+	private boolean isFrontBlack;
+	private boolean isBackBlack;
+	private boolean isFrontWhite;
+	private boolean isBackWhite;
 	
+	private boolean flag = false;
+	private static boolean isRunning = true;
+
 	public Avoid(){
 		
-		light = new LightSensor(SensorPort.S2);
-        light.setFloodlight(true);
-        
+		lightFront = new LightSensor(SensorPort.S2, true);
+		lightBack = new LightSensor(SensorPort.S3, true);        
 		
 		this.setDaemon(true);
         this.start();
     
 	}
 	
+	public static void threadRunning(boolean b){
+		
+		isRunning = b;
+		LCD.drawString("isRunning? "+isRunning,0,3);
+	}
+	
 	public void run()
     {
-      Thread t1 = new Thread(new Runnable(){
+     Thread t1 = new Thread(new Runnable(){
 
           @Override
           public void run() {
-              while ( true ){
+              while ( isRunning ){
             	  
-            	  lightValue = light.readValue();
-            	  LCD.drawString("LightValue  "+lightValue,0,4);
-            	  
-            	  if(lightValue < 40){
-            		  lightCount++;
-            		  Delay.msDelay(10);
-            		  LCD.drawString("LightCount  "+lightCount,0,5);
-            	  } 
-            	  
-            	  else if (lightValue > 40 && lightValue < 254){
-            		  lightCount = 0;
-            		  LCD.drawString("LightCount zero",0,5);
-            	  }
-            	  
-            	  
-              }
+            	lightValFront = lightFront.readValue();
+            	lightValBack = lightBack.readValue();
+            	Delay.msDelay(50);
+           }
           }  
         });
         t1.start();
@@ -209,43 +220,54 @@ class Avoid extends Thread implements Behavior{
 	@Override
 	public int takeControl() {
 		// TODO Auto-generated method stub
-		if(lightValue < 40){				//lightCount > 5 && lightCount < 30 && lightValue > 40) {
+			
+		if(isBackWhite == true && isFrontBlack == true && lightValFront > 40 ){
+    		Sound.twoBeeps();
+    		flag = true;
+    	}
+  		
+  		// Front sensor
+  		if(lightValFront < 40 && lightValFront < 254){ isFrontBlack = true; isFrontWhite = false; }	
+  		if(lightValFront > 40) {isFrontWhite = true; isFrontBlack = false;}		
+  		
+  		// Back sensor
+  		if(lightValBack < 40 && lightValBack < 254 ){ isBackBlack = true; isBackWhite = false; }	
+  		if(lightValBack > 40){ isBackWhite = true; isBackBlack = false; }
+  		
+  		/*
+  		LCD.drawString("backBlack? "+isBackBlack,0,3);
+  		LCD.drawString("backWhite? "+isBackWhite,0,4);
+  		
+  		LCD.drawString("frontBlack? "+isFrontBlack,0,5);
+  		LCD.drawString("frontWhite? "+isFrontWhite,0,6);
+		*/
+  		
+		if(flag == true) {
     		return 100;
     	} 
     	else { 
     		return 0;
     	}
+    	
 	}
 
 	@Override
 	public void action() {
 		// TODO Auto-generated method stub
 		_suppressed = false;
-		
-		NXTRegulatedMotor left = Motor.B;
-	    NXTRegulatedMotor right = Motor.C;
-	      
-	    DifferentialPilot pilot = new DifferentialPilot(carInstance.getWheelDiameter(), carInstance.getTrackWidth(), left, right);
-	    OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
-	      
-	    Pose initialPose = new Pose(0,0,0);
-	      
-	    pilot.setTravelSpeed(carInstance.getTravelSpeed());
-	    pilot.setRotateSpeed(carInstance.getRotateSpeed());
-	    poseProvider.setPose(initialPose);
+
 	    
 	    LCD.drawString("Avoid          ",0,2);
 	    
-	    pilot.stop();
-    	Sound.twoBeeps();
-    	pilot.rotate(180, false);
-    	pilot.travel(40, false);
-    	
-	    while (!_suppressed && pilot.isMoving())
+    	BumperCar.pilot.rotate(180, false);
+    	flag = false;
+
+	    while (!_suppressed && BumperCar.pilot.isMoving())
 	    {
 	    	Thread.yield(); //don't exit till suppressed
 	    }
 		
+	    BumperCar.pilot.stop();
 	}
 
 	@Override
