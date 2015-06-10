@@ -128,22 +128,22 @@ class Wander extends Thread implements Behavior{
     	//LCD.drawString("Random     "+randomNumber,0,3);
     	
     	if(randomNumber >=0 && randomNumber <= 24){
-    		Avoid.threadRunning(false);
+    		//Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(90, false);
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=25 && randomNumber <= 49){
-    		Avoid.threadRunning(false);
+    		//Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(180, false);
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=50 && randomNumber <= 74){
-    		Avoid.threadRunning(false);
+    		//Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(270, false);
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=75 && randomNumber <= 100){
-    		Avoid.threadRunning(false);
+    		//Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(0, false);
     		Avoid.threadRunning(true);
     	}
@@ -170,6 +170,7 @@ class Wander extends Thread implements Behavior{
 class Avoid extends Thread implements Behavior{
 	
 	private boolean _suppressed = false;
+	private TouchSensor bumper;
 	private LightSensor lightFront;
 	private LightSensor lightBack;
 	private int lightValFront;
@@ -187,7 +188,8 @@ class Avoid extends Thread implements Behavior{
 	public Avoid(){
 		
 		lightFront = new LightSensor(SensorPort.S2, true);
-		lightBack = new LightSensor(SensorPort.S3, true);        
+		lightBack = new LightSensor(SensorPort.S3, true);
+		bumper = new TouchSensor(SensorPort.S1);
 		
 		this.setDaemon(true);
         this.start();
@@ -242,7 +244,7 @@ class Avoid extends Thread implements Behavior{
   		LCD.drawString("frontWhite? "+isFrontWhite,0,6);
 		*/
   		
-		if(flag == true) {
+		if(flag == true || bumper.isPressed()) {
     		return 100;
     	} 
     	else { 
