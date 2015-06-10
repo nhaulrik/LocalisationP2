@@ -125,26 +125,34 @@ class Wander extends Thread implements Behavior{
 	    }
 	    
 	    randomNumber = random.nextInt(100);
+	  //  Avoid.threadRunning(true);
+	    
     	//LCD.drawString("Random     "+randomNumber,0,3);
     	
     	if(randomNumber >=0 && randomNumber <= 24){
-    		//Avoid.threadRunning(false);
+    		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(90, false);
+    		//Delay.msDelay(1000);
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=25 && randomNumber <= 49){
-    		//Avoid.threadRunning(false);
+    		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(180, false);
+    		//Delay.msDelay(1000);
+
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=50 && randomNumber <= 74){
-    		//Avoid.threadRunning(false);
+    		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(270, false);
+    		//Delay.msDelay(1000);
+
     		Avoid.threadRunning(true);
     	}
     	else if(randomNumber >=75 && randomNumber <= 100){
-    		//Avoid.threadRunning(false);
+    		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(0, false);
+    		//Delay.msDelay(1000);
     		Avoid.threadRunning(true);
     	}
     	
@@ -208,7 +216,7 @@ class Avoid extends Thread implements Behavior{
 
           @Override
           public void run() {
-              while ( isRunning ){
+              while ( true ){
             	  
             	lightValFront = lightFront.readValue();
             	lightValBack = lightBack.readValue();
@@ -223,26 +231,30 @@ class Avoid extends Thread implements Behavior{
 	public int takeControl() {
 		// TODO Auto-generated method stub
 			
-		if(isBackWhite == true && isFrontBlack == true && lightValFront > 40 ){
-    		Sound.twoBeeps();
-    		flag = true;
-    	}
-  		
-  		// Front sensor
-  		if(lightValFront < 40 && lightValFront < 254){ isFrontBlack = true; isFrontWhite = false; }	
-  		if(lightValFront > 40) {isFrontWhite = true; isFrontBlack = false;}		
-  		
-  		// Back sensor
-  		if(lightValBack < 40 && lightValBack < 254 ){ isBackBlack = true; isBackWhite = false; }	
-  		if(lightValBack > 40){ isBackWhite = true; isBackBlack = false; }
-  		
-  		/*
-  		LCD.drawString("backBlack? "+isBackBlack,0,3);
-  		LCD.drawString("backWhite? "+isBackWhite,0,4);
-  		
-  		LCD.drawString("frontBlack? "+isFrontBlack,0,5);
-  		LCD.drawString("frontWhite? "+isFrontWhite,0,6);
-		*/
+		if ( isRunning == true) {
+		
+			if(isBackWhite == true && isFrontBlack == true && lightValFront > 40 ){
+	    		Sound.twoBeeps();
+	    		flag = true;
+	    	}
+	  		
+	  		// Front sensor
+	  		if(lightValFront < 40 && lightValFront < 254){ isFrontBlack = true; isFrontWhite = false; }	
+	  		if(lightValFront > 40) {isFrontWhite = true; isFrontBlack = false;}		
+	  		
+	  		// Back sensor
+	  		if(lightValBack < 40 && lightValBack < 254 ){ isBackBlack = true; isBackWhite = false; }	
+	  		if(lightValBack > 40){ isBackWhite = true; isBackBlack = false; }
+	  		
+	  		/*
+	  		LCD.drawString("backBlack? "+isBackBlack,0,3);
+	  		LCD.drawString("backWhite? "+isBackWhite,0,4);
+	  		
+	  		LCD.drawString("frontBlack? "+isFrontBlack,0,5);
+	  		LCD.drawString("frontWhite? "+isFrontWhite,0,6);
+			*/
+	  		
+		}
   		
 		if(flag == true || bumper.isPressed()) {
     		return 100;
@@ -261,7 +273,7 @@ class Avoid extends Thread implements Behavior{
 	    
 	    LCD.drawString("Avoid          ",0,2);
 	    
-    	BumperCar.pilot.rotate(180, false);
+    	BumperCar.pilot.travel(-50, false);
     	flag = false;
 
 	    while (!_suppressed && BumperCar.pilot.isMoving())
