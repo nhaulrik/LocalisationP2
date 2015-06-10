@@ -5,6 +5,7 @@
 import java.util.Random;
 
 import lejos.nxt.*;
+import lejos.nxt.comm.RConsole;
 import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.navigation.Pose;
@@ -42,6 +43,7 @@ public class BumperCar
     static OdometryPoseProvider poseProvider = new OdometryPoseProvider(pilot);
       
     static Pose initialPose = new Pose(0,0,0);
+    
       
 
  
@@ -53,9 +55,10 @@ public class BumperCar
     
   public static void main(String[] args)
   {
-	    pilot.setTravelSpeed(travelSpeed);
-	    pilot.setRotateSpeed(rotateSpeed);
-	    poseProvider.setPose(initialPose);
+	  RConsole.open();
+	  pilot.setTravelSpeed(travelSpeed);
+	  pilot.setRotateSpeed(rotateSpeed);
+	  poseProvider.setPose(initialPose);
 	     
     
     Behavior b1 = new Wander();
@@ -80,6 +83,14 @@ public class BumperCar
     
 
 	 }
+  
+  public static void show(Pose p)
+  {
+     LCD.clear();
+      LCD.drawString("Pose X " + p.getX(), 0, 2);
+      LCD.drawString("Pose Y " + p.getY(), 0, 3);
+      LCD.drawString("Pose V " + p.getHeading(), 0, 4);
+  }
   
   
   
@@ -116,9 +127,11 @@ class Wander extends Thread implements Behavior{
 		_suppressed = false;
 		
 		
-	    LCD.drawString("Wander         ",0,2);
+	    LCD.drawString("Wander         ",0,1);
 	    
 	    BumperCar.pilot.travel(20, true);
+	    BumperCar.show(BumperCar.poseProvider.getPose());
+	    
 	    while (!_suppressed && BumperCar.pilot.isMoving())
 	    {
 	    	Thread.yield(); //don't exit till suppressed
@@ -132,19 +145,22 @@ class Wander extends Thread implements Behavior{
     	if(!_suppressed && randomNumber >=0 && randomNumber <= 24){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(90, false);
+    		BumperCar.show(BumperCar.poseProvider.getPose());
     		//Delay.msDelay(1000);
     		Avoid.threadRunning(true);
     	}
     	else if(!_suppressed && randomNumber >=25 && randomNumber <= 49){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(180, false);
+    		BumperCar.show(BumperCar.poseProvider.getPose());
     		//Delay.msDelay(1000);
 
     		Avoid.threadRunning(true);
     	}
     	else if(!_suppressed && randomNumber >=50 && randomNumber <= 74){
     		Avoid.threadRunning(false);
-    		BumperCar.pilot.rotate(270, false);
+    		BumperCar.pilot.rotate(-90, false);
+    		BumperCar.show(BumperCar.poseProvider.getPose());
     		//Delay.msDelay(1000);
 
     		Avoid.threadRunning(true);
@@ -152,6 +168,7 @@ class Wander extends Thread implements Behavior{
     	else if(!_suppressed && randomNumber >=75 && randomNumber <= 100){
     		Avoid.threadRunning(false);
     		BumperCar.pilot.rotate(0, false);
+    		BumperCar.show(BumperCar.poseProvider.getPose());
     		//Delay.msDelay(1000);
     		Avoid.threadRunning(true);
     	}
@@ -207,7 +224,7 @@ class Avoid extends Thread implements Behavior{
 	public static void threadRunning(boolean b){
 		
 		isRunning = b;
-		LCD.drawString("isRunning? "+isRunning,0,3);
+		//LCD.drawString("isRunning? "+isRunning,0,3);
 	}
 	
 	public void run()
@@ -221,6 +238,7 @@ class Avoid extends Thread implements Behavior{
             	lightValFront = lightFront.readValue();
             	lightValBack = lightBack.readValue();
             	Delay.msDelay(50);
+            	BumperCar.show(BumperCar.poseProvider.getPose());
            }
           }  
         });
@@ -271,11 +289,21 @@ class Avoid extends Thread implements Behavior{
 		_suppressed = false;
 
 	    
-	    LCD.drawString("Avoid          ",0,2);
+	    LCD.drawString("Avoid          ",0,1);
+	    
+	    BumperCar.pilot.travel(-10, false );
+	    BumperCar.show(BumperCar.poseProvider.getPose());
+	    
+	    while (!_suppressed && BumperCar.pilot.isMoving())
+	    {
+	    	Thread.yield(); //don't exit till suppressed
+	    }
 	    
     	BumperCar.pilot.rotate(180, false);
+    	BumperCar.show(BumperCar.poseProvider.getPose());
     	flag = false;
 
+    	
 	    while (!_suppressed && BumperCar.pilot.isMoving())
 	    {
 	    	Thread.yield(); //don't exit till suppressed
