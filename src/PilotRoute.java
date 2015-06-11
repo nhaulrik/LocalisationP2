@@ -11,6 +11,8 @@ public class PilotRoute
 	private NXTRegulatedMotor left = Motor.B;
 	private NXTRegulatedMotor right = Motor.C;
 	   
+	private LightSensor light;
+	
 	private DifferentialPilot pilot = new DifferentialPilot(wheelDiameter, trackWidth, left, right);
 
 	public PilotRoute(boolean usb) 
@@ -27,7 +29,9 @@ public class PilotRoute
 		PC.output((move.getMoveType() == Move.MoveType.TRAVEL? 0:1 ));
 		PC.output(move.getDistanceTraveled());
 		PC.output(move.getAngleTurned());
+		
 	}
+	
 	
 	private void travel(double distance)
 	{	
@@ -42,7 +46,13 @@ public class PilotRoute
 	}
 	
 	public void go()
-	{				
+	{	
+		
+		light = new LightSensor(SensorPort.S3, true);
+		float lightVal = light.readNormalizedValue();
+		PC.output(lightVal);
+		
+		
 		Sound.beep();
 		while ( ! Button.ENTER.isDown()) Thread.yield();
 		Sound.twoBeeps();
