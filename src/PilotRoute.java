@@ -49,8 +49,8 @@ public class PilotRoute
 	{	
 		
 		light = new LightSensor(SensorPort.S3, true);
-		float lightVal = light.readNormalizedValue();
-		PC.output(lightVal);
+		float lightVal;
+		
 		
 		
 		Sound.beep();
@@ -58,10 +58,9 @@ public class PilotRoute
 		Sound.twoBeeps();
 		
 		travel(50);
-		rotate(90);	
-		travel(20);
-		rotate(-90);
-		travel(50);
+		lightVal = light.readNormalizedValue();
+		PC.output(lightVal);
+
 		
 		while ( ! Button.ENTER.isDown()) Thread.yield();
 		
@@ -74,10 +73,10 @@ public class PilotRoute
 	
 	public static void main(String[] args) 
 	{
-		PilotRoute route = new PilotRoute(false);
+		PilotRoute route = new PilotRoute(true);
 		
 		LCD.clear();
-		LCD.drawString("Pilot route", 0, 0);
+		LCD.drawString("Pilot route ex. 2", 0, 0);
 		route.go();		
 	}
 }
